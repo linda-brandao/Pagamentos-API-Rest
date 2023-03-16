@@ -15,8 +15,8 @@ public class PessoaService {
 	@Autowired
 	private PessoaRepository pessoaRepository;
 
-	public Pessoa criar(Pessoa Pessoa) {
-		return pessoaRepository.save(Pessoa);
+	public Pessoa criar(Pessoa pessoa) {
+		return pessoaRepository.save(pessoa);	
 	}
 
 	public List<Pessoa> listar() {
@@ -24,21 +24,22 @@ public class PessoaService {
 	}
 
 	public Pessoa buscarPorCodigo(Long codigo) {
-		Pessoa Pessoa = pessoaRepository.findById(codigo).orElseThrow(); // se vier null a gente ja lança uma
+		Pessoa pessoa = pessoaRepository.findById(codigo).orElseThrow(); // se vier null a gente ja lança uma
 																					// exceção, se nao ele retorna
 																					// Pessoa
-		return Pessoa;
+		return pessoa;
 	}
 
 	public void excluir(Long codigo) {
 		pessoaRepository.deleteById(codigo);
 	}
 
-	public Pessoa atualizar(Long codigo, Pessoa Pessoa) {
+	public Pessoa atualizar(Long codigo, Pessoa pessoa) {
 		Pessoa pessoaSalva = pessoaRepository.findById(codigo).orElseThrow();
-		BeanUtils.copyProperties(Pessoa, pessoaSalva, "codigo"); // atualizaçao em memoria
-
+		BeanUtils.copyProperties(pessoa, pessoaSalva, "codigo"); // atualizaçao em memoria
+		
 		return pessoaRepository.save(pessoaSalva);
 	}
+	
 
 }

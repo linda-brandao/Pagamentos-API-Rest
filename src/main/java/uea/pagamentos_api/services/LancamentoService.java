@@ -4,10 +4,15 @@ import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import uea.pagamentos_api.models.Categoria;
 import uea.pagamentos_api.models.Lancamento;
+import uea.pagamentos_api.models.Pessoa;
+import uea.pagamentos_api.repositories.CategoriaRepository;
 import uea.pagamentos_api.repositories.LancamentoRepository;
+import uea.pagamentos_api.repositories.PessoaRepository;
 
 @Service
 public class LancamentoService {
@@ -15,8 +20,19 @@ public class LancamentoService {
 	@Autowired
 	private LancamentoRepository lancamentoRepository;
 
-	public Lancamento criar(Lancamento Lancamento) {
-		return lancamentoRepository.save(Lancamento);
+	@Autowired
+	private PessoaRepository pessoaRepository;
+	
+	@Autowired
+	private CategoriaRepository categoriaRepository;
+	
+	public Lancamento criar(Lancamento lancamento) {
+		Pessoa pessoa = pessoaRepository.findById(lancamento.getPessoa().getCodigo()).orElseThrow();
+		Categoria categoria = categoriaRepository.findById(lancamento.getCategoria().getCodigo()).orElseThrow();
+		if(pessoa.getAtivo()) {
+			return lancamentoRepository.save(lancamento);	
+		}
+		throw new RuntimeException("Não é permitido criar ou atualizar o dado com ativo=false");
 	}
 
 	public List<Lancamento> listar() {
@@ -24,21 +40,25 @@ public class LancamentoService {
 	}
 
 	public Lancamento buscarPorCodigo(Long codigo) {
-		Lancamento Lancamento = lancamentoRepository.findById(codigo).orElseThrow(); // se vier null a gente ja lança uma
+		Lancamento lancamento = lancamentoRepository.findById(codigo).orElseThrow(); // se vier null a gente ja lança uma
 																					// exceção, se nao ele retorna
 																					// Lancamento
-		return Lancamento;
+		return lancamento;
 	}
 
 	public void excluir(Long codigo) {
 		lancamentoRepository.deleteById(codigo);
 	}
 
-	public Lancamento atualizar(Long codigo, Lancamento Lancamento) {
+	public Lancamento atualizar(Long codigo, Lancamento lancamento) {
+		Pessoa pessoa = pessoaRepository.findById(lancamento.getPessoa().getCodigo()).orElseThrow();
+		Categoria categoria = categoriaRepository.findById(lancamento.getCategoria().getCodigo()).orElseThrow();
 		Lancamento lancamentoSalva = lancamentoRepository.findById(codigo).orElseThrow();
-		BeanUtils.copyProperties(Lancamento, lancamentoSalva, "codigo"); // atualizaçao em memoria
-
-		return lancamentoRepository.save(lancamentoSalva);
+		BeanUtils.copyProperties(lancamento, lancamentoSalva, "codigo"); // atualizaçao em memoria
+		if(pessoa.getAtivo()) {
+			return lancamentoRepository.save(lancamentoSalva);			
+		}
+		throw new RuntimeException("Não é permitido criar ou atualizar o dado com ativo=false");
 	}
 
 }
