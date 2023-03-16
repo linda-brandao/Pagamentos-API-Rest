@@ -44,7 +44,22 @@ public class ResourceExceptionHandler {
 	public ResponseEntity<StandardError> emptyResultDataAccessException(EmptyResultDataAccessException e, HttpServletRequest request) {
 		// lista dos erros que podem ocorrer
 		List<String> erros = Arrays
-				.asList(messageSource.getMessage("mesagem.invalida", null, LocaleContextHolder.getLocale()));
+				.asList(messageSource.getMessage("mensagem.invalida", null, LocaleContextHolder.getLocale()));
+		HttpStatus status = HttpStatus.NOT_FOUND;
+
+		// instância da classe que gerencia o erro
+		StandardError err = new StandardError(Instant.now(), status.value(), erros, e.getMessage(),
+				request.getRequestURI());
+
+		return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(RuntimeException.class) // ficar ouvindo se ocorreu um erro desse tipo para fazer o
+	// tratamento embaixo
+	public ResponseEntity<StandardError> runtimeException(RuntimeException e, HttpServletRequest request) {
+		// lista dos erros que podem ocorrer
+		List<String> erros = Arrays
+				.asList(messageSource.getMessage("mensagem.invalida.erro", null, LocaleContextHolder.getLocale()));
 		HttpStatus status = HttpStatus.NOT_FOUND;
 
 		// instância da classe que gerencia o erro
