@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.AssertTrue;
+import uea.pagamentos_api.dto.ResumoPessoaDto;
 import uea.pagamentos_api.models.Pessoa;
+import uea.pagamentos_api.repositories.filters.PessoaFilter;
 import uea.pagamentos_api.services.PessoaService;
 
 @RestController
@@ -36,9 +39,9 @@ public class PessoaResource {
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<Pessoa>> listar(){
-		List<Pessoa> pessoas = pessoaService.listar();
-		return ResponseEntity.ok().body(pessoas);
+	public ResponseEntity<Page<ResumoPessoaDto>> resumir(PessoaFilter pessoaFilter, Pageable pageable){
+		Page<ResumoPessoaDto> resumos = pessoaService.resumir(pessoaFilter, pageable);
+		return ResponseEntity.ok().body(resumos);
 	}
 	
 	@GetMapping(value = "/{codigo}")
@@ -51,6 +54,12 @@ public class PessoaResource {
 	public ResponseEntity<Void> excluir(@PathVariable Long codigo){
 		pessoaService.excluir(codigo);
 		return ResponseEntity.noContent().build();
+	}
+	
+	@PutMapping(value = "/{codigo}/ativo")
+	public ResponseEntity<Pessoa> atualizarPropriedadeAtiva(@PathVariable Long codigo, @RequestBody Boolean ativo){
+		Pessoa pessoaSalva = pessoaService.atualizarPropriedadeAtivo(codigo, ativo);
+		return ResponseEntity.ok(pessoaSalva);
 	}
 	
 	@PutMapping(value = "/{codigo}")

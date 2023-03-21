@@ -4,15 +4,19 @@ import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import uea.pagamentos_api.dto.ResumoLancamentoDto;
 import uea.pagamentos_api.models.Categoria;
 import uea.pagamentos_api.models.Lancamento;
 import uea.pagamentos_api.models.Pessoa;
 import uea.pagamentos_api.repositories.CategoriaRepository;
 import uea.pagamentos_api.repositories.LancamentoRepository;
 import uea.pagamentos_api.repositories.PessoaRepository;
+import uea.pagamentos_api.repositories.filters.LancamentoFilter;
+import uea.pagamentos_api.services.exceptions.PessoaInativaException;
 
 @Service
 public class LancamentoService {
@@ -26,13 +30,17 @@ public class LancamentoService {
 	@Autowired
 	private CategoriaRepository categoriaRepository;
 	
+	public Page<ResumoLancamentoDto> resumir(LancamentoFilter lancamentofilter, Pageable pageable){
+		return lancamentoRepository.filtrar(lancamentofilter, pageable);
+	}
+	
 	public Lancamento criar(Lancamento lancamento) {
 		Pessoa pessoa = pessoaRepository.findById(lancamento.getPessoa().getCodigo()).orElseThrow();
 		Categoria categoria = categoriaRepository.findById(lancamento.getCategoria().getCodigo()).orElseThrow();
 		if(pessoa.getAtivo()) {
 			return lancamentoRepository.save(lancamento);	
 		}
-		throw new RuntimeException("Não é permitido criar ou atualizar o dado com ativo=false");
+		throw new PessoaInativaException();
 	}
 
 	public List<Lancamento> listar() {
@@ -54,11 +62,11 @@ public class LancamentoService {
 		Pessoa pessoa = pessoaRepository.findById(lancamento.getPessoa().getCodigo()).orElseThrow();
 		Categoria categoria = categoriaRepository.findById(lancamento.getCategoria().getCodigo()).orElseThrow();
 		Lancamento lancamentoSalva = lancamentoRepository.findById(codigo).orElseThrow();
-		BeanUtils.copyProperties(lancamento, lancamentoSalva, "codigo"); // atualizaçao em memoria
 		if(pessoa.getAtivo()) {
 			return lancamentoRepository.save(lancamentoSalva);			
 		}
-		throw new RuntimeException("Não é permitido criar ou atualizar o dado com ativo=false");
+		BeanUtils.copyProperties(lancamento, lancamentoSalva, "codigo"); // atualizaçao em memoria
+		throw new PessoaInativaException();
 	}
 
 }

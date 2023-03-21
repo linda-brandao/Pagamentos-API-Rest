@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import uea.pagamentos_api.services.exceptions.PessoaInativaException;
 
 @ControllerAdvice // para fazer o tratamento de exceção, ao inves de dar o erro, ele vai retornar
 					// uma mensagem personalizada
@@ -54,13 +55,13 @@ public class ResourceExceptionHandler {
 		return ResponseEntity.status(status).body(err);
 	}
 	
-	@ExceptionHandler(RuntimeException.class) // ficar ouvindo se ocorreu um erro desse tipo para fazer o
+	@ExceptionHandler(PessoaInativaException.class) // ficar ouvindo se ocorreu um erro desse tipo para fazer o
 	// tratamento embaixo
-	public ResponseEntity<StandardError> runtimeException(RuntimeException e, HttpServletRequest request) {
+	public ResponseEntity<StandardError> pessoaInativaException(PessoaInativaException e, HttpServletRequest request) {
 		// lista dos erros que podem ocorrer
 		List<String> erros = Arrays
-				.asList(messageSource.getMessage("mensagem.invalida.erro", null, LocaleContextHolder.getLocale()));
-		HttpStatus status = HttpStatus.NOT_FOUND;
+				.asList(messageSource.getMessage("mensagem.pessoa.inativa", null, LocaleContextHolder.getLocale()));
+		HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
 
 		// instância da classe que gerencia o erro
 		StandardError err = new StandardError(Instant.now(), status.value(), erros, e.getMessage(),
